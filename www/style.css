@@ -417,3 +417,11 @@ input[type="range"]::-webkit-slider-thumb {
   .controls-section { flex-direction: column; }
   .color-btns { flex-wrap: wrap; }
 }
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .canvas-wrapper {
+    width: auto;
+    height: 80vh;
+    margin: 0 auto;
+  }
+}
