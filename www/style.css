@@ -1,6 +1,6 @@
 /* ========================================
    CricketEye — Ball Tracker Starter
-   Dark Glassmorphism Theme
+   Dark Glassmorphism Theme — Mobile-First
    ======================================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,6 +20,11 @@
   --success:   #00ff88;
   --warning:   #ffcc00;
   --radius:    16px;
+  /* Safe area insets for notched phones */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 html, body {
@@ -27,18 +32,21 @@ html, body {
   color: var(--text);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── HEADER ──────────────────────────────── */
 header {
   text-align: center;
-  padding: 20px 16px 12px;
+  padding: 12px 16px 8px;
+  padding-top: calc(12px + var(--safe-top));
   background: linear-gradient(180deg, rgba(0,229,255,0.08) 0%, transparent 100%);
   border-bottom: 1px solid var(--glass-border);
 }
 header h1 {
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   font-weight: 700;
   letter-spacing: -0.5px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -47,7 +55,7 @@ header h1 {
   background-clip: text;
 }
 .subtitle {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 300;
   color: var(--muted);
   -webkit-text-fill-color: var(--muted);
@@ -59,10 +67,11 @@ header h1 {
 main {
   max-width: 900px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
+  padding-bottom: calc(12px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* ── GLASS CARD ──────────────────────────── */
@@ -71,7 +80,7 @@ main {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   backdrop-filter: blur(12px);
-  padding: 20px;
+  padding: 16px;
 }
 
 /* ── CAMERA SECTION ──────────────────────── */
@@ -82,12 +91,12 @@ main {
 .canvas-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
   background: #000;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow: 0 0 40px rgba(0,229,255,0.08);
+  /* No fixed aspect-ratio — we let JS set it from the actual camera feed */
 }
 
 #video {
@@ -95,38 +104,41 @@ main {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   opacity: 0; /* hidden — canvas draws the frame */
 }
 
 #mainCanvas {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* ── HUD PILLS ───────────────────────────── */
 .hud {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 8px;
+  left: 8px;
+  right: 8px;
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   z-index: 10;
+  pointer-events: none;
 }
 
 .hud-pill {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.65);
   border: 1px solid var(--glass-border);
   color: var(--muted);
   backdrop-filter: blur(8px);
   transition: all 0.3s;
+  pointer-events: auto;
 }
 
 .hud-pill.tracking {
@@ -157,21 +169,18 @@ main {
 /* ── CONTROLS ────────────────────────────── */
 .controls-section {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  align-items: center;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .control-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-width: 160px;
+  gap: 6px;
 }
 
 .control-group label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -181,20 +190,22 @@ main {
 /* Color buttons */
 .color-btns {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .color-btn {
   flex: 1;
-  padding: 8px 6px;
+  padding: 8px 4px;
   border-radius: 10px;
   border: 1px solid var(--glass-border);
   background: rgba(255,255,255,0.04);
   color: var(--text);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .color-btn:hover { background: rgba(255,255,255,0.09); }
@@ -217,8 +228,8 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
@@ -232,18 +243,29 @@ input[type="range"]::-webkit-slider-thumb {
   text-align: right;
 }
 
+/* Action buttons row */
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* Reset button */
 .btn-reset {
-  padding: 10px 20px;
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid rgba(255,60,60,0.4);
   background: rgba(255,60,60,0.1);
   color: #ff6b6b;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex: 1;
+  min-width: 0;
 }
 .btn-reset:hover {
   background: rgba(255,60,60,0.2);
@@ -252,16 +274,20 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Tracking button */
 .btn-primary {
-  padding: 10px 20px;
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid rgba(124,58,237,0.4);
   background: rgba(124,58,237,0.1);
   color: var(--accent2);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex: 1;
+  min-width: 0;
 }
 .btn-primary:hover {
   background: rgba(124,58,237,0.2);
@@ -279,16 +305,20 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Auto Detect button */
 .btn-auto {
-  padding: 10px 20px;
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid rgba(0,229,255,0.4);
   background: rgba(0,229,255,0.1);
   color: var(--accent);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex: 1;
+  min-width: 0;
 }
 .btn-auto:hover {
   background: rgba(0,229,255,0.2);
@@ -322,12 +352,12 @@ input[type="range"]::-webkit-slider-thumb {
 .stats-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .stat-card {
   text-align: center;
-  padding: 14px 8px;
+  padding: 10px 6px;
   background: rgba(255,255,255,0.03);
   border-radius: 12px;
   border: 1px solid var(--glass-border);
@@ -340,7 +370,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: -1px;
@@ -348,14 +378,12 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .stat-label {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-top: 4px;
+  margin-top: 2px;
 }
-
-
 
 /* ── MODAL ────────────────────────────────── */
 .modal {
@@ -369,6 +397,7 @@ input[type="range"]::-webkit-slider-thumb {
   opacity: 1;
   transition: opacity 0.3s;
   backdrop-filter: blur(5px);
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
 .modal.hidden {
   opacity: 0;
@@ -411,17 +440,142 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--text);
 }
 
-/* ── RESPONSIVE ──────────────────────────── */
-@media (max-width: 600px) {
-  .stats-section { grid-template-columns: repeat(2, 1fr); }
-  .controls-section { flex-direction: column; }
-  .color-btns { flex-wrap: wrap; }
+/* ══════════════════════════════════════════════
+   RESPONSIVE — Mobile Portrait (default)
+   ══════════════════════════════════════════════ */
+
+/* Small phones */
+@media (max-width: 380px) {
+  .color-btn { font-size: 0.65rem; padding: 6px 2px; }
+  .stat-value { font-size: 1.1rem; }
+  .hud-pill { font-size: 0.58rem; padding: 2px 6px; }
 }
 
-@media (orientation: landscape) and (max-height: 600px) {
-  .canvas-wrapper {
-    width: auto;
-    height: 80vh;
-    margin: 0 auto;
+/* Portrait phones — 2 column stats */
+@media (max-width: 600px) {
+  .stats-section { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ══════════════════════════════════════════════
+   LANDSCAPE MODE — The critical fix
+   The camera should fill the width and the 
+   controls should sit below or beside it
+   without stretching the video feed.
+   ══════════════════════════════════════════════ */
+@media (orientation: landscape) {
+  header {
+    padding: 6px 16px 4px;
+    padding-left: calc(6px + var(--safe-left));
+    padding-right: calc(6px + var(--safe-right));
   }
+  header h1 { font-size: 1rem; }
+  .subtitle { font-size: 0.6rem; }
+
+  main {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 100%;
+    padding: 8px;
+    padding-left: calc(8px + var(--safe-left));
+    padding-right: calc(8px + var(--safe-right));
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* Camera takes the left ~60% in landscape */
+  .camera-section {
+    flex: 3;
+    min-width: 0;
+  }
+
+  /* Canvas should be constrained by viewport height in landscape */
+  .canvas-wrapper {
+    max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
+  }
+
+  #mainCanvas {
+    max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
+  }
+
+  /* Controls + Stats stack vertically on the right */
+  .controls-section {
+    flex: 2;
+    min-width: 200px;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .stats-section {
+    flex: 2;
+    min-width: 200px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .glass { padding: 12px; }
+
+  .color-btn { padding: 6px 4px; font-size: 0.7rem; }
+  .btn-primary, .btn-auto, .btn-reset {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+  .stat-value { font-size: 1.1rem; }
+  .stat-label { font-size: 0.55rem; }
+  .stat-card { padding: 8px 4px; }
+  .control-group label { font-size: 0.62rem; }
+}
+
+/* Extra-short landscape (phones held sideways) */
+@media (orientation: landscape) and (max-height: 500px) {
+  header { display: none; } /* hide header to maximize space */
+  
+  main {
+    padding: 4px;
+    padding-left: calc(4px + var(--safe-left));
+    padding-right: calc(4px + var(--safe-right));
+    gap: 4px;
+  }
+
+  .camera-section { flex: 3; }
+
+  .canvas-wrapper {
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+    border-radius: 8px;
+  }
+
+  #mainCanvas {
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+  }
+
+  .controls-section {
+    flex: 2;
+    padding: 8px;
+    gap: 8px;
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+    overflow-y: auto;
+  }
+
+  .stats-section {
+    flex: 2;
+    padding: 8px;
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+    overflow-y: auto;
+  }
+
+  .hud-pill { font-size: 0.55rem; padding: 2px 5px; }
+  .glass { border-radius: 8px; }
+}
+
+/* Tablets and larger in landscape */
+@media (orientation: landscape) and (min-width: 768px) {
+  .camera-section { flex: 5; }
+  .controls-section { flex: 3; }
+  .stats-section { flex: 3; }
 }

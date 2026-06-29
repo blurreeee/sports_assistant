@@ -176,8 +176,40 @@ canvas.addEventListener('touchmove', handleMove, { passive: false });
 canvas.addEventListener('touchend', handleEnd);
 
 // ─────────────────────────────────────────────────────────
-//  STAGE 1 — CAMERA SETUP
+//  STAGE 1 — CAMERA SETUP (Mobile-First)
 // ─────────────────────────────────────────────────────────
+
+/**
+ * Resize the canvas to match the actual video dimensions.
+ * This is called on initial load AND on orientation change
+ * to prevent any stretching.
+ */
+function resizeCanvas() {
+  if (!video.videoWidth || !video.videoHeight) return;
+
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+
+  canvas.width = vw;
+  canvas.height = vh;
+  bestFrameCanvas.width = vw;
+  bestFrameCanvas.height = vh;
+
+  // Set the wrapper's aspect-ratio dynamically to match the actual feed
+  const wrapper = document.querySelector('.canvas-wrapper');
+  if (wrapper) {
+    wrapper.style.aspectRatio = `${vw} / ${vh}`;
+  }
+
+  // Reset OpenCV oldGray so it re-initializes at new size
+  if (oldGray) {
+    oldGray.delete();
+    oldGray = null;
+  }
+
+  console.log(`Canvas resized: ${vw}×${vh} (aspect ${(vw/vh).toFixed(2)})`);
+}
+
 async function startCamera() {
   try {
     // Prefer rear camera on mobile (facingMode: 'environment')
@@ -194,12 +226,23 @@ async function startCamera() {
 
     // Once video metadata loads, size the canvas to match
     video.addEventListener('loadedmetadata', () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      bestFrameCanvas.width = canvas.width;
-      bestFrameCanvas.height = canvas.height;
+      resizeCanvas();
       console.log(`Camera ready: ${canvas.width}×${canvas.height}`);
       requestAnimationFrame(tick); // ← start the main loop
+    });
+
+    // Handle orientation changes — camera dimensions may swap
+    // Use screen.orientation API with fallback to resize event
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', () => {
+        // Small delay to let the browser settle the new video dimensions
+        setTimeout(resizeCanvas, 300);
+      });
+    }
+    window.addEventListener('resize', () => {
+      // Debounced resize to catch orientation changes
+      clearTimeout(window._resizeTimer);
+      window._resizeTimer = setTimeout(resizeCanvas, 200);
     });
 
   } catch (err) {
