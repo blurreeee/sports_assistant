@@ -111,6 +111,10 @@ const toggleTrackingBtn = document.getElementById('toggleTrackingBtn');
 const screenshotModal = document.getElementById('screenshotModal');
 const screenshotImg = document.getElementById('screenshotImg');
 const closeModalBtn = document.getElementById('closeModalBtn');
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsClose = document.getElementById('settingsClose');
+const settingsBackdrop = document.getElementById('settingsBackdrop');
 
 const bestFrameCanvas = document.createElement('canvas');
 const bestFrameCtx = bestFrameCanvas.getContext('2d', { willReadFrequently: true });
@@ -176,7 +180,47 @@ canvas.addEventListener('touchmove', handleMove, { passive: false });
 canvas.addEventListener('touchend', handleEnd);
 
 // ─────────────────────────────────────────────────────────
-//  STAGE 1 — CAMERA SETUP (Mobile-First)
+//  LANDSCAPE ORIENTATION LOCK
+// ─────────────────────────────────────────────────────────
+function lockLandscape() {
+  // Try to lock orientation to landscape using the Screen Orientation API
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').then(() => {
+      console.log('Orientation locked to landscape');
+    }).catch(err => {
+      console.warn('Could not lock orientation:', err.message);
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  SETTINGS PANEL TOGGLE
+// ─────────────────────────────────────────────────────────
+function openSettings() {
+  settingsPanel.classList.add('open');
+  settingsBackdrop.classList.add('open');
+  settingsToggle.classList.add('open');
+}
+
+function closeSettings() {
+  settingsPanel.classList.remove('open');
+  settingsBackdrop.classList.remove('open');
+  settingsToggle.classList.remove('open');
+}
+
+settingsToggle.addEventListener('click', () => {
+  if (settingsPanel.classList.contains('open')) {
+    closeSettings();
+  } else {
+    openSettings();
+  }
+});
+
+settingsClose.addEventListener('click', closeSettings);
+settingsBackdrop.addEventListener('click', closeSettings);
+
+// ─────────────────────────────────────────────────────────
+//  STAGE 1 — CAMERA SETUP (Mobile-First, Rear Camera)
 // ─────────────────────────────────────────────────────────
 
 /**
@@ -195,12 +239,6 @@ function resizeCanvas() {
   bestFrameCanvas.width = vw;
   bestFrameCanvas.height = vh;
 
-  // Set the wrapper's aspect-ratio dynamically to match the actual feed
-  const wrapper = document.querySelector('.canvas-wrapper');
-  if (wrapper) {
-    wrapper.style.aspectRatio = `${vw} / ${vh}`;
-  }
-
   // Reset OpenCV oldGray so it re-initializes at new size
   if (oldGray) {
     oldGray.delete();
@@ -212,17 +250,34 @@ function resizeCanvas() {
 
 async function startCamera() {
   try {
-    // Prefer rear camera on mobile (facingMode: 'environment')
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-      audio: false,
-    });
+    // Force rear camera on mobile (facingMode: 'environment' exact)
+    // Falls back to ideal if exact fails (e.g. on desktop/webcam)
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { exact: 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
+    } catch (exactErr) {
+      console.warn('Exact rear camera failed, falling back to ideal:', exactErr.message);
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+    }
 
     video.srcObject = stream;
+
+    // Lock landscape after camera is granted
+    lockLandscape();
 
     // Once video metadata loads, size the canvas to match
     video.addEventListener('loadedmetadata', () => {
@@ -232,15 +287,12 @@ async function startCamera() {
     });
 
     // Handle orientation changes — camera dimensions may swap
-    // Use screen.orientation API with fallback to resize event
     if (screen.orientation) {
       screen.orientation.addEventListener('change', () => {
-        // Small delay to let the browser settle the new video dimensions
         setTimeout(resizeCanvas, 300);
       });
     }
     window.addEventListener('resize', () => {
-      // Debounced resize to catch orientation changes
       clearTimeout(window._resizeTimer);
       window._resizeTimer = setTimeout(resizeCanvas, 200);
     });
@@ -802,19 +854,21 @@ if (toggleTrackingBtn) {
   toggleTrackingBtn.addEventListener('click', () => {
     state.isTracking = !state.isTracking;
     if (state.isTracking) {
-      toggleTrackingBtn.innerHTML = '⏹ Stop Tracking';
+      toggleTrackingBtn.querySelector('.action-icon').textContent = '⏹';
       toggleTrackingBtn.classList.add('tracking-active');
+      toggleTrackingBtn.title = 'Stop Tracking';
       state.sessionMaxY = -Infinity; // reset best point
     } else {
-      toggleTrackingBtn.innerHTML = '▶ Start Tracking';
+      toggleTrackingBtn.querySelector('.action-icon').textContent = '▶';
       toggleTrackingBtn.classList.remove('tracking-active');
+      toggleTrackingBtn.title = 'Start Tracking';
       
       if (state.sessionMaxY !== -Infinity) {
         screenshotImg.src = bestFrameCanvas.toDataURL('image/jpeg', 0.8);
         screenshotModal.classList.remove('hidden');
       }
 
-      // Optional: Clear trail when tracking stops
+      // Clear trail when tracking stops
       state.trail = [];
       statSpeed.textContent = '--';
       statX.textContent = '--';
