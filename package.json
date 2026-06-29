@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/blurreeee/sports_assistant#readme",
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
     "@capacitor/core": "^8.4.1"
   },
   "devDependencies": {
