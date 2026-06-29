@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CricketEye — Ball Tracker Starter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=3" />
+</head>
+<body>
+
+  <header>
+    <h1>🏏 CricketEye <span class="subtitle">Ball Tracker — Starter</span></h1>
+  </header>
+
+  <main>
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  CAMERA + OVERLAY                          -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="camera-section">
+      <div class="canvas-wrapper">
+        <!-- Hidden video source -->
+        <video id="video" autoplay playsinline muted></video>
+        <!-- Main canvas: draws video frame + overlay -->
+        <canvas id="mainCanvas"></canvas>
+        <!-- HUD labels -->
+        <div class="hud">
+          <span id="fpsLabel" class="hud-pill">FPS: --</span>
+          <span id="ballLabel" class="hud-pill ball-detected">No Ball</span>
+          <span id="sideLabel" class="hud-pill">Side: --</span>
+          <span id="lineInstruction" class="hud-pill">Draw Line on Canvas</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  CONTROLS                                  -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="controls-section glass">
+      <div class="control-group">
+        <label>Ball Color</label>
+        <div class="color-btns">
+          <button class="color-btn active" data-color="red">🔴 Red</button>
+          <button class="color-btn" data-color="white">⚪ White</button>
+          <button class="color-btn" data-color="pink">🩷 Pink</button>
+          <button class="color-btn" data-color="green">🟢 Green</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Detection Sensitivity</label>
+        <input type="range" id="sensitivity" min="10" max="80" value="40" />
+        <span id="sensitivityVal">40</span>
+      </div>
+
+      <div class="control-group">
+        <label>Trail Length</label>
+        <input type="range" id="trailLength" min="5" max="60" value="30" />
+        <span id="trailVal">30</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="toggleTrackingBtn" class="btn-primary tracking-active">⏹ Stop Tracking</button>
+        <button id="autoDetectBtn" class="btn-auto">✨ Auto Detect Line</button>
+        <button id="resetBtn" class="btn-reset">↺ Reset Trail</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  LIVE STATS                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="stats-section glass">
+      <div class="stat-card">
+        <div class="stat-value" id="statSpeed">-- </div>
+        <div class="stat-label">Speed (kmph)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statX">--</div>
+        <div class="stat-label">Ball X</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statY">--</div>
+        <div class="stat-label">Ball Y</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statRadius">--</div>
+        <div class="stat-label">Radius (px)</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  EXPLAINER                                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="explainer glass">
+      <h2>🔬 How It Works</h2>
+      <ol>
+        <li><strong>Camera frame</strong> is drawn to a hidden canvas each tick</li>
+        <li><strong>getImageData()</strong> reads raw pixel bytes <code>[R,G,B,A, ...]</code></li>
+        <li>Each pixel is converted from <strong>RGB → HSV</strong></li>
+        <li>Pixels within the ball's <strong>HSV color range</strong> are flagged</li>
+        <li>A simple <strong>grid scan</strong> finds the cluster centroid</li>
+        <li>Position is pushed into a <strong>ring buffer trail</strong></li>
+        <li>Trail + detection circle are drawn on the <strong>overlay canvas</strong></li>
+      </ol>
+    </section>
+  </main>
+
+  <!-- Screenshot Modal -->
+  <div id="screenshotModal" class="modal hidden">
+    <div class="modal-content glass">
+      <button id="closeModalBtn" class="close-btn">&times;</button>
+      <h3>Lowest Point Detected</h3>
+      <img id="screenshotImg" alt="Ball at lowest point" />
+    </div>
+  </div>
+
+  <script src="https://docs.opencv.org/4.8.0/opencv.js" type="text/javascript"></script>
+  <script src="tracker.js?v=4"></script>
+</body>
+</html>
