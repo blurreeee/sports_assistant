@@ -1,6 +1,6 @@
 /* ========================================
-   CricketEye — Ball Tracker Starter
-   Dark Glassmorphism Theme — Mobile-First
+   CricketEye — Ball Tracker
+   Fullscreen Camera App Layout
    ======================================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,7 +20,6 @@
   --success:   #00ff88;
   --warning:   #ffcc00;
   --radius:    16px;
-  /* Safe area insets for notched phones */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -28,75 +27,28 @@
 }
 
 html, body {
-  background: var(--bg);
+  background: #000;
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ── HEADER ──────────────────────────────── */
-header {
-  text-align: center;
-  padding: 12px 16px 8px;
-  padding-top: calc(12px + var(--safe-top));
-  background: linear-gradient(180deg, rgba(0,229,255,0.08) 0%, transparent 100%);
-  border-bottom: 1px solid var(--glass-border);
-}
-header h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.subtitle {
-  font-size: 0.7rem;
-  font-weight: 300;
-  color: var(--muted);
-  -webkit-text-fill-color: var(--muted);
-  display: block;
-  margin-top: 2px;
-}
-
-/* ── MAIN ────────────────────────────────── */
-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 12px;
-  padding-bottom: calc(12px + var(--safe-bottom));
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ── GLASS CARD ──────────────────────────── */
-.glass {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  backdrop-filter: blur(12px);
-  padding: 16px;
-}
-
-/* ── CAMERA SECTION ──────────────────────── */
-.camera-section {
-  position: relative;
-}
-
-.canvas-wrapper {
-  position: relative;
+  height: 100%;
   width: 100%;
-  background: #000;
-  border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 0 40px rgba(0,229,255,0.08);
-  /* No fixed aspect-ratio — we let JS set it from the actual camera feed */
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ══════════════════════════════════════════════
+   FULLSCREEN CAMERA — Takes entire viewport
+   ══════════════════════════════════════════════ */
+.camera-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: 1;
 }
 
 #video {
@@ -104,39 +56,44 @@ main {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   opacity: 0; /* hidden — canvas draws the frame */
 }
 
 #mainCanvas {
-  display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
-/* ── HUD PILLS ───────────────────────────── */
+/* ══════════════════════════════════════════════
+   HUD — Top overlay pills
+   ══════════════════════════════════════════════ */
 .hud {
   position: absolute;
   top: 8px;
+  top: calc(8px + var(--safe-top));
   left: 8px;
-  right: 8px;
+  left: calc(8px + var(--safe-left));
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
 }
 
 .hud-pill {
   font-size: 0.65rem;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.65);
-  border: 1px solid var(--glass-border);
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
   color: var(--muted);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: all 0.3s;
   pointer-events: auto;
 }
@@ -166,60 +123,290 @@ main {
   50%       { box-shadow: 0 0 18px rgba(0,255,136,0.6); }
 }
 
-/* ── CONTROLS ────────────────────────────── */
-.controls-section {
+/* ══════════════════════════════════════════════
+   STATS BAR — Bottom overlay
+   ══════════════════════════════════════════════ */
+.stats-bar {
+  position: absolute;
+  bottom: 10px;
+  bottom: calc(10px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  gap: 3px;
+  z-index: 20;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 6px 14px;
 }
 
-.control-group {
+.stat-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  padding: 2px 10px;
 }
 
-.control-group label {
-  font-size: 0.68rem;
+.stat-item + .stat-item {
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+.stat-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.stat-lbl {
+  font-size: 0.5rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 1px;
+}
+
+/* ══════════════════════════════════════════════
+   ACTION STRIP — Right edge buttons
+   ══════════════════════════════════════════════ */
+.action-strip {
+  position: absolute;
+  right: 12px;
+  right: calc(12px + var(--safe-right));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 20;
+}
+
+.action-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.action-btn:active {
+  transform: scale(0.9);
+}
+
+.action-btn.tracking-active {
+  background: rgba(255,60,60,0.3);
+  border-color: rgba(255,60,60,0.6);
+  box-shadow: 0 0 14px rgba(255,60,60,0.3);
+}
+
+.action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════════════
+   SETTINGS TOGGLE — Gear button (top right)
+   ══════════════════════════════════════════════ */
+.settings-toggle-btn {
+  position: absolute;
+  top: 10px;
+  top: calc(10px + var(--safe-top));
+  right: 12px;
+  right: calc(12px + var(--safe-right));
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.settings-toggle-btn:active {
+  transform: scale(0.9);
+}
+
+.settings-toggle-btn.open {
+  background: rgba(0,229,255,0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: rotate(90deg);
+}
+
+.gear-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════════════
+   SETTINGS PANEL — Slide-in from right
+   ══════════════════════════════════════════════ */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  max-width: 80vw;
+  height: 100%;
+  background: rgba(10, 13, 20, 0.92);
+  border-left: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 100;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: var(--safe-top);
+  padding-right: var(--safe-right);
+  padding-bottom: var(--safe-bottom);
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.settings-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.settings-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-close-btn:active {
+  background: rgba(255,255,255,0.12);
+  color: var(--text);
+}
+
+.settings-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-group label {
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 /* Color buttons */
 .color-btns {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
 
 .color-btn {
-  flex: 1;
-  padding: 8px 4px;
+  padding: 10px 8px;
   border-radius: 10px;
   border: 1px solid var(--glass-border);
   background: rgba(255,255,255,0.04);
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  text-align: center;
 }
 
-.color-btn:hover { background: rgba(255,255,255,0.09); }
+.color-btn:active { background: rgba(255,255,255,0.09); }
 .color-btn.active {
-  background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(124,58,237,0.2));
+  background: linear-gradient(135deg, rgba(0,229,255,0.18), rgba(124,58,237,0.18));
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,229,255,0.15);
+}
+
+/* Slider row */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-row span {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Range sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
+  flex: 1;
   height: 4px;
   border-radius: 4px;
   background: rgba(255,255,255,0.1);
@@ -236,156 +423,27 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 0 8px rgba(0,229,255,0.5);
 }
 
-.control-group span {
-  font-size: 0.78rem;
-  color: var(--accent);
-  font-weight: 600;
-  text-align: right;
+/* ══════════════════════════════════════════════
+   SETTINGS BACKDROP
+   ══════════════════════════════════════════════ */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-/* Action buttons row */
-.btn-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.settings-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* Reset button */
-.btn-reset {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,60,60,0.4);
-  background: rgba(255,60,60,0.1);
-  color: #ff6b6b;
-  font-size: 0.8rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  flex: 1;
-  min-width: 0;
-}
-.btn-reset:hover {
-  background: rgba(255,60,60,0.2);
-  box-shadow: 0 0 12px rgba(255,60,60,0.3);
-}
-
-/* Tracking button */
-.btn-primary {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(124,58,237,0.4);
-  background: rgba(124,58,237,0.1);
-  color: var(--accent2);
-  font-size: 0.8rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  flex: 1;
-  min-width: 0;
-}
-.btn-primary:hover {
-  background: rgba(124,58,237,0.2);
-  box-shadow: 0 0 12px rgba(124,58,237,0.3);
-}
-.btn-primary.tracking-active {
-  border-color: rgba(255,60,60,0.4);
-  background: rgba(255,60,60,0.1);
-  color: #ff6b6b;
-}
-.btn-primary.tracking-active:hover {
-  background: rgba(255,60,60,0.2);
-  box-shadow: 0 0 12px rgba(255,60,60,0.3);
-}
-
-/* Auto Detect button */
-.btn-auto {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,229,255,0.4);
-  background: rgba(0,229,255,0.1);
-  color: var(--accent);
-  font-size: 0.8rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  flex: 1;
-  min-width: 0;
-}
-.btn-auto:hover {
-  background: rgba(0,229,255,0.2);
-  box-shadow: 0 0 12px rgba(0,229,255,0.3);
-}
-
-/* Preset Select Dropdown */
-.preset-select {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
-  font-size: 0.85rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s;
-  height: 38px;
-}
-.preset-select:hover {
-  background: rgba(255,255,255,0.09);
-  border-color: rgba(255,255,255,0.2);
-}
-.preset-select option {
-  background: var(--bg2);
-  color: var(--text);
-}
-
-/* ── STATS ───────────────────────────────── */
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.stat-card {
-  text-align: center;
-  padding: 10px 6px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
-  transition: all 0.3s;
-}
-
-.stat-card:hover {
-  background: rgba(0,229,255,0.05);
-  border-color: rgba(0,229,255,0.2);
-}
-
-.stat-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -1px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-label {
-  font-size: 0.6rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 2px;
-}
-
-/* ── MODAL ────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   MODAL
+   ══════════════════════════════════════════════ */
 .modal {
   position: fixed;
   inset: 0;
@@ -397,6 +455,7 @@ input[type="range"]::-webkit-slider-thumb {
   opacity: 1;
   transition: opacity 0.3s;
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
 .modal.hidden {
@@ -411,6 +470,11 @@ input[type="range"]::-webkit-slider-thumb {
   flex-direction: column;
   align-items: center;
   padding: 30px 20px 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .modal-content h3 {
   color: var(--accent);
@@ -436,146 +500,86 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
   transition: color 0.2s;
 }
-.close-btn:hover {
+.close-btn:hover,
+.close-btn:active {
   color: var(--text);
 }
 
 /* ══════════════════════════════════════════════
-   RESPONSIVE — Mobile Portrait (default)
+   LANDSCAPE ADJUSTMENTS
    ══════════════════════════════════════════════ */
 
-/* Small phones */
-@media (max-width: 380px) {
-  .color-btn { font-size: 0.65rem; padding: 6px 2px; }
-  .stat-value { font-size: 1.1rem; }
-  .hud-pill { font-size: 0.58rem; padding: 2px 6px; }
-}
-
-/* Portrait phones — 2 column stats */
-@media (max-width: 600px) {
-  .stats-section { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* ══════════════════════════════════════════════
-   LANDSCAPE MODE — The critical fix
-   The camera should fill the width and the 
-   controls should sit below or beside it
-   without stretching the video feed.
-   ══════════════════════════════════════════════ */
-@media (orientation: landscape) {
-  header {
-    padding: 6px 16px 4px;
-    padding-left: calc(6px + var(--safe-left));
-    padding-right: calc(6px + var(--safe-right));
-  }
-  header h1 { font-size: 1rem; }
-  .subtitle { font-size: 0.6rem; }
-
-  main {
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-width: 100%;
-    padding: 8px;
-    padding-left: calc(8px + var(--safe-left));
-    padding-right: calc(8px + var(--safe-right));
-    gap: 8px;
-    align-items: flex-start;
-  }
-
-  /* Camera takes the left ~60% in landscape */
-  .camera-section {
-    flex: 3;
-    min-width: 0;
-  }
-
-  /* Canvas should be constrained by viewport height in landscape */
-  .canvas-wrapper {
-    max-height: calc(100vh - 80px);
-    max-height: calc(100dvh - 80px);
-  }
-
-  #mainCanvas {
-    max-height: calc(100vh - 80px);
-    max-height: calc(100dvh - 80px);
-  }
-
-  /* Controls + Stats stack vertically on the right */
-  .controls-section {
-    flex: 2;
-    min-width: 200px;
-    padding: 12px;
-    gap: 10px;
-  }
-
-  .stats-section {
-    flex: 2;
-    min-width: 200px;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    padding: 12px;
-  }
-
-  .glass { padding: 12px; }
-
-  .color-btn { padding: 6px 4px; font-size: 0.7rem; }
-  .btn-primary, .btn-auto, .btn-reset {
-    padding: 8px 10px;
-    font-size: 0.75rem;
-  }
-  .stat-value { font-size: 1.1rem; }
-  .stat-label { font-size: 0.55rem; }
-  .stat-card { padding: 8px 4px; }
-  .control-group label { font-size: 0.62rem; }
-}
-
-/* Extra-short landscape (phones held sideways) */
+/* Extra-short landscape (phones held sideways) — maximize camera space */
 @media (orientation: landscape) and (max-height: 500px) {
-  header { display: none; } /* hide header to maximize space */
-  
-  main {
-    padding: 4px;
-    padding-left: calc(4px + var(--safe-left));
-    padding-right: calc(4px + var(--safe-right));
+  .hud {
+    top: calc(4px + var(--safe-top));
+    left: calc(4px + var(--safe-left));
     gap: 4px;
   }
 
-  .camera-section { flex: 3; }
-
-  .canvas-wrapper {
-    max-height: calc(100vh - 8px);
-    max-height: calc(100dvh - 8px);
-    border-radius: 8px;
+  .hud-pill {
+    font-size: 0.55rem;
+    padding: 2px 7px;
   }
 
-  #mainCanvas {
-    max-height: calc(100vh - 8px);
-    max-height: calc(100dvh - 8px);
+  .stats-bar {
+    bottom: calc(6px + var(--safe-bottom));
+    padding: 4px 10px;
+    border-radius: 10px;
   }
 
-  .controls-section {
-    flex: 2;
-    padding: 8px;
+  .stat-val { font-size: 0.75rem; }
+  .stat-lbl { font-size: 0.45rem; }
+  .stat-item { padding: 2px 8px; }
+
+  .action-strip {
     gap: 8px;
-    max-height: calc(100vh - 8px);
-    max-height: calc(100dvh - 8px);
-    overflow-y: auto;
   }
 
-  .stats-section {
-    flex: 2;
-    padding: 8px;
-    max-height: calc(100vh - 8px);
-    max-height: calc(100dvh - 8px);
-    overflow-y: auto;
+  .action-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 
-  .hud-pill { font-size: 0.55rem; padding: 2px 5px; }
-  .glass { border-radius: 8px; }
+  .settings-toggle-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
 }
 
-/* Tablets and larger in landscape */
-@media (orientation: landscape) and (min-width: 768px) {
-  .camera-section { flex: 5; }
-  .controls-section { flex: 3; }
-  .stats-section { flex: 3; }
+/* Portrait mode — rotate prompt */
+@media (orientation: portrait) {
+  .camera-fullscreen::after {
+    content: '📱 Rotate to Landscape';
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    z-index: 9999;
+    letter-spacing: 0.02em;
+    animation: fade-pulse 2s ease-in-out infinite;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* Glass utility class (for modal) */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }

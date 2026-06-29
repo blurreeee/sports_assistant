@@ -2,42 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>CricketEye — Ball Tracker Starter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0" />
+  <title>CricketEye — Ball Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
 
-  <header>
-    <h1>🏏 CricketEye <span class="subtitle">Ball Tracker — Starter</span></h1>
-  </header>
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  FULLSCREEN CAMERA VIEW                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="camera-fullscreen">
+    <!-- Hidden video source -->
+    <video id="video" autoplay playsinline muted></video>
+    <!-- Main canvas: draws video frame + overlay -->
+    <canvas id="mainCanvas"></canvas>
 
-  <main>
-    <!-- ═══════════════════════════════════════════ -->
-    <!--  CAMERA + OVERLAY                          -->
-    <!-- ═══════════════════════════════════════════ -->
-    <section class="camera-section">
-      <div class="canvas-wrapper">
-        <!-- Hidden video source -->
-        <video id="video" autoplay playsinline muted></video>
-        <!-- Main canvas: draws video frame + overlay -->
-        <canvas id="mainCanvas"></canvas>
-        <!-- HUD labels -->
-        <div class="hud">
-          <span id="fpsLabel" class="hud-pill">FPS: --</span>
-          <span id="ballLabel" class="hud-pill ball-detected">No Ball</span>
-          <span id="sideLabel" class="hud-pill">Side: --</span>
-          <span id="lineInstruction" class="hud-pill">Draw Line on Canvas</span>
-        </div>
+    <!-- Minimal HUD overlay (always visible) -->
+    <div class="hud">
+      <span id="fpsLabel" class="hud-pill">FPS: --</span>
+      <span id="ballLabel" class="hud-pill ball-detected">No Ball</span>
+      <span id="sideLabel" class="hud-pill">Side: --</span>
+      <span id="lineInstruction" class="hud-pill">Draw Line on Canvas</span>
+    </div>
+
+    <!-- Compact stats bar (always visible at bottom) -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-val" id="statSpeed">--</span>
+        <span class="stat-lbl">SPD</span>
       </div>
-    </section>
+      <div class="stat-item">
+        <span class="stat-val" id="statX">--</span>
+        <span class="stat-lbl">X</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val" id="statY">--</span>
+        <span class="stat-lbl">Y</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val" id="statRadius">--</span>
+        <span class="stat-lbl">R</span>
+      </div>
+    </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!--  CONTROLS                                  -->
-    <!-- ═══════════════════════════════════════════ -->
-    <section class="controls-section glass">
-      <div class="control-group">
+    <!-- Action buttons (always visible, right edge) -->
+    <div class="action-strip">
+      <button id="toggleTrackingBtn" class="action-btn tracking-active" title="Stop Tracking">
+        <span class="action-icon">⏹</span>
+      </button>
+      <button id="autoDetectBtn" class="action-btn" title="Auto Detect Line">
+        <span class="action-icon">✨</span>
+      </button>
+      <button id="resetBtn" class="action-btn" title="Reset Trail">
+        <span class="action-icon">↺</span>
+      </button>
+    </div>
+
+    <!-- Settings toggle button -->
+    <button id="settingsToggle" class="settings-toggle-btn" title="Settings">
+      <span class="gear-icon">⚙</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  SETTINGS PANEL (slide-in overlay)          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-header">
+      <h2>⚙ Settings</h2>
+      <button id="settingsClose" class="settings-close-btn">&times;</button>
+    </div>
+
+    <div class="settings-body">
+      <div class="setting-group">
         <label>Ball Color</label>
         <div class="color-btns">
           <button class="color-btn active" data-color="red">🔴 Red</button>
@@ -47,49 +85,26 @@
         </div>
       </div>
 
-      <div class="control-group">
+      <div class="setting-group">
         <label>Detection Sensitivity</label>
-        <input type="range" id="sensitivity" min="10" max="80" value="40" />
-        <span id="sensitivityVal">40</span>
+        <div class="slider-row">
+          <input type="range" id="sensitivity" min="10" max="80" value="40" />
+          <span id="sensitivityVal">40</span>
+        </div>
       </div>
 
-      <div class="control-group">
+      <div class="setting-group">
         <label>Trail Length</label>
-        <input type="range" id="trailLength" min="5" max="60" value="30" />
-        <span id="trailVal">30</span>
+        <div class="slider-row">
+          <input type="range" id="trailLength" min="5" max="60" value="30" />
+          <span id="trailVal">30</span>
+        </div>
       </div>
+    </div>
+  </div>
 
-      <div class="btn-row">
-        <button id="toggleTrackingBtn" class="btn-primary tracking-active">⏹ Stop Tracking</button>
-        <button id="autoDetectBtn" class="btn-auto">✨ Auto Detect Line</button>
-        <button id="resetBtn" class="btn-reset">↺ Reset Trail</button>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════ -->
-    <!--  LIVE STATS                                -->
-    <!-- ═══════════════════════════════════════════ -->
-    <section class="stats-section glass">
-      <div class="stat-card">
-        <div class="stat-value" id="statSpeed">-- </div>
-        <div class="stat-label">Speed (kmph)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statX">--</div>
-        <div class="stat-label">Ball X</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statY">--</div>
-        <div class="stat-label">Ball Y</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statRadius">--</div>
-        <div class="stat-label">Radius (px)</div>
-      </div>
-    </section>
-
-
-  </main>
+  <!-- Settings backdrop -->
+  <div id="settingsBackdrop" class="settings-backdrop"></div>
 
   <!-- Screenshot Modal -->
   <div id="screenshotModal" class="modal hidden">
@@ -101,6 +116,6 @@
   </div>
 
   <script src="https://docs.opencv.org/4.8.0/opencv.js" type="text/javascript"></script>
-  <script src="tracker.js?v=6"></script>
+  <script src="tracker.js?v=7"></script>
 </body>
 </html>
