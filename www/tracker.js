@@ -245,7 +245,7 @@ function resizeCanvas() {
     oldGray = null;
   }
 
-  console.log(`Canvas resized: ${vw}×${vh} (aspect ${(vw/vh).toFixed(2)})`);
+  console.log(`Canvas resized: ${vw}×${vh} (aspect ${(vw / vh).toFixed(2)})`);
 }
 
 async function startCamera() {
@@ -733,7 +733,7 @@ function autoDetectLine() {
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   let src = cv.matFromImageData(imageData);
-  
+
   let hsv = new cv.Mat();
   cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
   cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
@@ -743,13 +743,13 @@ function autoDetectLine() {
     let mask = new cv.Mat();
     let low = cv.matFromArray(1, 1, cv.CV_8UC3, lowArr);
     let high = cv.matFromArray(1, 1, cv.CV_8UC3, highArr);
-    
+
     cv.inRange(hsv, low, high, mask);
-    
+
     let lines = new cv.Mat();
     // More relaxed Hough parameters: lower threshold and minLineLength to 20, allow gap up to 15
     cv.HoughLinesP(mask, lines, 1, Math.PI / 180, 20, 20, 15);
-    
+
     let bestLine = null;
     console.log(`[Line Detection] Found ${lines.rows} raw lines under current color filter.`);
     if (lines.rows > 0) {
@@ -762,7 +762,7 @@ function autoDetectLine() {
         let y1 = lines.data32S[i * 4 + 1];
         let x2 = lines.data32S[i * 4 + 2];
         let y2 = lines.data32S[i * 4 + 3];
-        
+
         // Filter out horizontal lines
         let dx = Math.abs(x2 - x1);
         let dy = Math.abs(y2 - y1);
@@ -770,25 +770,25 @@ function autoDetectLine() {
           console.log(`[Line Detection] Skipped horizontal-ish line: (${x1}, ${y1}) -> (${x2}, ${y2})`);
           continue;
         }
-        
+
         // Calculate distance from center to this line's midpoint
         let mx = (x1 + x2) / 2;
         let my = (y1 + y2) / 2;
         let dist = Math.sqrt(Math.pow(mx - cx, 2) + Math.pow(my - cy, 2));
-        
+
         if (dist < minDistanceToCenter) {
           minDistanceToCenter = dist;
           bestLine = { p1: { x: x1, y: y1 }, p2: { x: x2, y: y2 } };
         }
       }
     }
-    
+
     // Cleanup local mats
     mask.delete();
     low.delete();
     high.delete();
     lines.delete();
-    
+
     return bestLine;
   }
 
@@ -797,19 +797,19 @@ function autoDetectLine() {
   // Lowered V threshold to 130 to catch lines in shadows.
   console.log("[Line Detection] Checking 1st preference: White line on Green pitch...");
   let bestLine = detectWithBounds([0, 0, 130], [180, 90, 255]);
-  
+
   // 2nd Preference: Blue line on White pitch (H: 90-135, S: 50-255, V: 50-255)
   // Lowered S/V limits to 50 to ensure we catch blue lines in shadows or under exposure.
   if (!bestLine) {
     console.log("[Line Detection] White line detection failed, checking 2nd preference: Blue line on White pitch...");
     bestLine = detectWithBounds([90, 50, 50], [135, 255, 255]);
   }
-  
+
   if (bestLine) {
     state.line.p1 = bestLine.p1;
     state.line.p2 = bestLine.p2;
     state.line.status = 'tracking';
-    
+
     if (p0) p0.delete();
     p0 = cv.matFromArray(2, 1, cv.CV_32FC2, [state.line.p1.x, state.line.p1.y, state.line.p2.x, state.line.p2.y]);
     console.log('Auto-detected line:', state.line);
@@ -862,7 +862,7 @@ if (toggleTrackingBtn) {
       toggleTrackingBtn.querySelector('.action-icon').textContent = '▶';
       toggleTrackingBtn.classList.remove('tracking-active');
       toggleTrackingBtn.title = 'Start Tracking';
-      
+
       if (state.sessionMaxY !== -Infinity) {
         screenshotImg.src = bestFrameCanvas.toDataURL('image/jpeg', 0.8);
         screenshotModal.classList.remove('hidden');
